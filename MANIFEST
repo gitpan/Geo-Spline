@@ -1,0 +1,12 @@
+CHANGES
+LICENSE
+Makefile.PL
+MANIFEST
+META.yml
+README
+lib/Geo/Spline.pm
+t/base.t
+bin/example-spline.pl
+bin/example-time.pl
+bin/example-track2spline.pl
+bin/data-track2spline.txt
