@@ -118,11 +118,15 @@ sub time {
   my $vlon=$Blon + 2 * $Clon * $t + 3 * $Dlon * $t ** 2;
   my $speed=sqrt($vlat ** 2 + $vlon ** 2);
   my $heading=PI/2 - atan2($vlat,$vlon);
+  $heading*=RAD;
+  $heading+=360 if ($heading < 0);
+  $lat/=EPCMPD;
+  $lon/=EECMPD;
   return {time=>$timereal,
-          lat=>$lat/EPCMPD,
-          lon=>$lon/EECMPD,
+          lat=>$lat,
+          lon=>$lon,
           speed=>$speed,
-          heading=>$heading * RAD};
+          heading=>$heading};
 }
 
 sub list {
