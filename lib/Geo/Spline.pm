@@ -6,21 +6,21 @@ Geo::Spline - Calculate geographic locations between GPS fixes.
 
 =head1 SYNOPSIS
 
-use Geo::Spline;
-my $p0={time=>1160449100.67,
-        lat=>39.197807,
-        lon=>-77.263510,
-        speed=>31.124,
-        heading=>144.8300};
-my $p1={time=>1160449225.66,
-        lat=>39.167718,
-        lon=>-77.242278,
-        speed=>30.615,
-        heading=>150.5300};
-my $spline=Geo::Spline->new($p0, $p1);
-my $pt=$spline->time(1160449150);
-print "Lon", $pt->{"lat"}, "Lat", $pt->{"lon"}, "\n";
-my @point=$spline->(); #default is int(t2-t1+.5)
+ use Geo::Spline;
+ my $p0={time=>1160449100.67,
+         lat=>39.197807,
+         lon=>-77.263510,
+         speed=>31.124,
+         heading=>144.8300};
+ my $p1={time=>1160449225.66,
+         lat=>39.167718,
+         lon=>-77.242278,
+         speed=>30.615,
+         heading=>150.5300};
+ my $spline=Geo::Spline->new($p0, $p1);
+ my $pt=$spline->time(1160449150);
+ print "Lon", $pt->{"lat"}, "Lat", $pt->{"lon"}, "\n";
+ my @point=$spline->(); #default is int(t2-t1+.5)
 
 =head1 DESCRIPTION
 
@@ -166,4 +166,3 @@ it under the same terms as Perl itself.
 
 Net::GPSD
 Math::Spline
-
