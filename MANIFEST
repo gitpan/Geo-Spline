@@ -9,3 +9,4 @@ t/base.t
 bin/example-track2spline.pl
 bin/example-point.pl
 bin/example-pointlist.pl
+doc/spline.xls

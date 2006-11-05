@@ -48,7 +48,7 @@ use constant earth_equatorial_circumference_meters_per_degree => 6378137 * PI/18
 use constant EPCMPD => earth_polar_circumference_meters_per_degree;
 use constant EECMPD => earth_equatorial_circumference_meters_per_degree;
 
-$VERSION = sprintf("%d.%02d", q{Revision: 0.06} =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q{Revision: 0.07} =~ /(\d+)\.(\d+)/);
 
 =head1 METHODS
 
