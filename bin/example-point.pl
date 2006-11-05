@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-example-time.pl
+example-point.pl
 
 =cut
 
@@ -22,5 +22,5 @@ my $p1={time=>1160449225.66,
         speed=>30.615,
         heading=>150.5300};
 my $spline=Geo::Spline->new($p0, $p1);
-my $pt=$spline->time(1160449150);
+my $pt=$spline->point(1160449150);
 print "Lon:", $pt->{"lat"}, "  Lat:", $pt->{"lon"}, "\n";

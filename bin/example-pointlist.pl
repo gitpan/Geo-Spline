@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-example-spline.pl
+example-pointlist.pl
 
 =cut
 
@@ -22,7 +22,15 @@ my $p1={time=>1160449225.66,
         speed=>30.615,
         heading=>150.5300};
 my $spline=Geo::Spline->new($p0, $p1);
-my $point=$spline->list(); #default count is int(t2-t1+.5)
+print "--- 10 points ---\n";
+my $point=$spline->pointlist(@{$spline->timelist(10)});
+my $i=1;
 foreach (@$point) {
-  print $_->{'lat'}, ":", $_->{'lon'}, "\n";
+  print $i++, ":", $_->{'time'}, ":", $_->{'lat'}, ":", $_->{'lon'}, "\n";
+}
+print "--- Default number of points ---\n";
+my $point=$spline->pointlist();
+$i=1;
+foreach (@$point) {
+  print $i++, ":", $_->{'time'}, ":", $_->{'lat'}, ":", $_->{'lon'}, "\n";
 }
