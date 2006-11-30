@@ -5,6 +5,7 @@ WriteMakefile(
   PREREQ_PM => {
                  strict       => 0,
                  vars         => 0,
+                 constant     => 0,
                },
                ($] >= 5.005 ? 
                  (

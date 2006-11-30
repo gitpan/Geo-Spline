@@ -7,29 +7,33 @@ Geo::Spline - Calculate geographic locations between GPS fixes.
 =head1 SYNOPSIS
 
  use Geo::Spline;
- my $p0={time=>1160449100.67,
-         lat=>39.197807,
-         lon=>-77.263510,
-         speed=>31.124,
-         heading=>144.8300};
+ my $p0={time=>1160449100.67, #seconds
+         lat=>39.197807,      #degrees
+         lon=>-77.263510,     #degrees
+         speed=>31.124,       #m/s
+         heading=>144.8300};  #degrees clockwise from North
  my $p1={time=>1160449225.66,
          lat=>39.167718,
          lon=>-77.242278,
          speed=>30.615,
          heading=>150.5300};
  my $spline=Geo::Spline->new($p0, $p1);
- my $point=$spline->point(1160449150);
- print "Lon", $pt->{"lat"}, "Lat", $pt->{"lon"}, "\n";
- my $pointlistref=$spline->pointlist(); #default is int(t2-t1+.5)
+ my %point=$spline->point(1160449150);
+ print "Lat:", $point{"lat"}, ", Lon:", $point{"lon"}, "\n\n";
+
+ my @points=$spline->pointlist();
+ foreach (@points) {
+   print "Lat:", $_->{"lat"}, ", Lon:", $_->{"lon"}, "\n";
+ }
 
 =head1 DESCRIPTION
 
-This program was developed to be able to calculate the position between two GPS fixes using a 2-dimintional 3rd order polynominal spline.
+This program was developed to be able to calculate the position between two GPS fixes using a 2-dimensional 3rd order polynomial spline.
 
  f(t)  = A + B(t-t0)  + C(t-t0)^2 + D(t-t0)^3 #position in X and Y
  f'(t) = B + 2C(t-t0) + 3D(t-t0)^2            #velocity in X and Y
 
-I did some simplae Math (for an engineer with a math minor) to come up with these formulas to calculate the unknowns from our knowns.
+I did some simple Math (for an engineer with a math minor) to come up with these formulas to calculate the unknowns from our knowns.
 
  A = x0                                     # when (t-t0)=0 in f(t)
  B = v0                                     # when (t-t0)=0 in f'(t)
@@ -48,9 +52,11 @@ use constant earth_equatorial_circumference_meters_per_degree => 6378137 * PI/18
 use constant EPCMPD => earth_polar_circumference_meters_per_degree;
 use constant EECMPD => earth_equatorial_circumference_meters_per_degree;
 
-$VERSION = sprintf("%d.%02d", q{Revision: 0.07} =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q{Revision: 0.08} =~ /(\d+)\.(\d+)/);
 
-=head1 METHODS
+=head1 CONSTRUCTOR
+
+ my $spline=Geo::Spline->new($p0, $p1);
 
 =cut
 
@@ -62,6 +68,10 @@ sub new {
   $self->initialize(@_);
   return $self;
 }
+
+=head1 METHODS
+
+=cut
 
 sub initialize {
   my $self = shift();
@@ -117,21 +127,18 @@ sub ABCD {
   return($A,$B,$C,$D);
 }
 
-sub pointlist {
-  my $self=shift();
-  my @list=@_;
-  @list=@{$self->timelist()} if (scalar(@list)== 0);
-  my @points=();
-  foreach (@list) {
-    push @points, $self->point($_);
-  }
-  return \@points;
-}
+=head2 point
+
+Method returns a single point from a single time.
+
+ my $point=$spline->point($t1);
+ my %point=$spline->point($t1);
+
+=cut
 
 sub point {
   my $self=shift();
   my $timereal=shift();
-  my @point=();
   my $t=$timereal-$self->{'pt0'}->{'time'};
   my ($Alat, $Blat, $Clat, $Dlat)=($self->{'Alat'}, $self->{'Blat'},$self->{'Clat'},$self->{'Dlat'});
   my ($Alon, $Blon, $Clon, $Dlon)=($self->{'Alon'}, $self->{'Blon'},$self->{'Clon'},$self->{'Dlon'});
@@ -145,12 +152,42 @@ sub point {
   $heading+=360 if ($heading < 0);
   $lat/=EPCMPD;
   $lon/=EECMPD;
-  return {time=>$timereal,
+  my %pt=(time=>$timereal,
           lat=>$lat,
           lon=>$lon,
           speed=>$speed,
-          heading=>$heading};
+          heading=>$heading);
+  return wantarray ? %pt : \%pt;
 }
+
+=head2 pointlist
+
+Method returns a list of points from a list of times.
+
+ my $list=$spline->pointlist($t1,$t2,$t3);
+ my @list=$spline->pointlist($t1,$t2,$t3);
+
+=cut
+
+sub pointlist {
+  my $self=shift();
+  my @list=@_;
+  @list=$self->timelist() if (scalar(@list)== 0);
+  my @points=();
+  foreach (@list) {
+    push @points, {$self->point($_)};
+  }
+  return wantarray ? @points : \@points;
+}
+
+=head2 timelist
+
+Method returns a list of times (n+1).  The default will return a list with an integer number of seconds between spline end points.
+
+ my $list=$spline->timelist($samples); 
+ my @list=$spline->timelist(); 
+
+=cut
 
 sub timelist {
   my $self=shift();
@@ -163,7 +200,7 @@ sub timelist {
     my $t=$t0+$dt*($_/$count); 
     push @list, $t;
   }
-  return \@list;
+  return wantarray ? @list : \@list;
 }
 
 sub round {
@@ -177,10 +214,6 @@ __END__
 =head1 TODO
 
 Integrate a better lat,Lon to meter conversions.
-
-Migrate certain hash reference variables to object methods.
-
-Add a timeref method
 
 =head1 BUGS
 
