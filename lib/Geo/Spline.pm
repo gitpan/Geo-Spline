@@ -6,57 +6,59 @@ Geo::Spline - Calculate geographic locations between GPS fixes.
 
 =head1 SYNOPSIS
 
- use Geo::Spline;
- my $p0={time=>1160449100.67, #seconds
-         lat=>39.197807,      #degrees
-         lon=>-77.263510,     #degrees
-         speed=>31.124,       #m/s
-         heading=>144.8300};  #degrees clockwise from North
- my $p1={time=>1160449225.66,
-         lat=>39.167718,
-         lon=>-77.242278,
-         speed=>30.615,
-         heading=>150.5300};
- my $spline=Geo::Spline->new($p0, $p1);
- my %point=$spline->point(1160449150);
- print "Lat:", $point{"lat"}, ", Lon:", $point{"lon"}, "\n\n";
+  use Geo::Spline;
+  my $p0={time=>1160449100.67, #seconds
+          lat=>39.197807,      #degrees
+          lon=>-77.263510,     #degrees
+          speed=>31.124,       #m/s
+          heading=>144.8300};  #degrees clockwise from North
+  my $p1={time=>1160449225.66,
+          lat=>39.167718,
+          lon=>-77.242278,
+          speed=>30.615,
+          heading=>150.5300};
+  my $spline=Geo::Spline->new($p0, $p1);
+  my %point=$spline->point(1160449150);
+  print "Lat:", $point{"lat"}, ", Lon:", $point{"lon"}, "\n\n";
 
- my @points=$spline->pointlist();
- foreach (@points) {
-   print "Lat:", $_->{"lat"}, ", Lon:", $_->{"lon"}, "\n";
- }
+  my @points=$spline->pointlist();
+  foreach (@points) {
+    print "Lat:", $_->{"lat"}, ", Lon:", $_->{"lon"}, "\n";
+  }
 
 =head1 DESCRIPTION
 
 This program was developed to be able to calculate the position between two GPS fixes using a 2-dimensional 3rd order polynomial spline.
 
- f(t)  = A + B(t-t0)  + C(t-t0)^2 + D(t-t0)^3 #position in X and Y
- f'(t) = B + 2C(t-t0) + 3D(t-t0)^2            #velocity in X and Y
+  f(t)  = A + B(t-t0)  + C(t-t0)^2 + D(t-t0)^3 #position in X and Y
+  f'(t) = B + 2C(t-t0) + 3D(t-t0)^2            #velocity in X and Y
 
 I did some simple Math (for an engineer with a math minor) to come up with these formulas to calculate the unknowns from our knowns.
 
- A = x0                                     # when (t-t0)=0 in f(t)
- B = v0                                     # when (t-t0)=0 in f'(t)
- C = (x1-A-B(t1-t0)-D(t1-t0)^3)/(t1-t0)^2   # solve for C from f(t)
- C = (v1-B-3D(t1-t0)^2)/2(t1-t0)            # solve for C from f'(t)
- D = (v1(t1-t0)+B(t1-t0)-2x1+2A)/(t1-t0)^3  # equate C=C then solve for D
+  A = x0                                     # when (t-t0)=0 in f(t)
+  B = v0                                     # when (t-t0)=0 in f'(t)
+  C = (x1-A-B(t1-t0)-D(t1-t0)^3)/(t1-t0)^2   # solve for C from f(t)
+  C = (v1-B-3D(t1-t0)^2)/2(t1-t0)            # solve for C from f'(t)
+  D = (v1(t1-t0)+B(t1-t0)-2x1+2A)/(t1-t0)^3  # equate C=C then solve for D
 
 =cut
 
 use strict;
 use vars qw($VERSION);
-use constant PI => 2 * atan2(1, 0);
-use constant RAD => 180/PI;
-use constant earth_polar_circumference_meters_per_degree => 6356752.314245 * PI/180;
-use constant earth_equatorial_circumference_meters_per_degree => 6378137 * PI/180;
+use Geo::Constants qw{PI};
+use Geo::Functions qw{deg_rad rad_deg round};
+use constant earth_polar_circumference_meters_per_degree => 6356752.314245 * &PI/180;
+use constant earth_equatorial_circumference_meters_per_degree => 6378137 * &PI/180;
 use constant EPCMPD => earth_polar_circumference_meters_per_degree;
 use constant EECMPD => earth_equatorial_circumference_meters_per_degree;
 
-$VERSION = sprintf("%d.%02d", q{Revision: 0.08} =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q{Revision: 0.09} =~ /(\d+)\.(\d+)/);
 
 =head1 CONSTRUCTOR
 
- my $spline=Geo::Spline->new($p0, $p1);
+=head2 new
+
+  my $spline=Geo::Spline->new($p0, $p1);
 
 =cut
 
@@ -82,10 +84,10 @@ sub initialize {
   my ($A, $B, $C, $D)=$self->ABCD(
      $self->{'pt0'}->{'time'},
      $self->{'pt0'}->{'lat'} * EPCMPD,
-     $self->{'pt0'}->{'speed'} * cos($self->{'pt0'}->{'heading'}/RAD),
+     $self->{'pt0'}->{'speed'} * cos(rad_deg($self->{'pt0'}->{'heading'})),
      $self->{'pt1'}->{'time'},
      $self->{'pt1'}->{'lat'} * EPCMPD,
-     $self->{'pt1'}->{'speed'} * cos($self->{'pt1'}->{'heading'}/RAD));
+     $self->{'pt1'}->{'speed'} * cos(rad_deg($self->{'pt1'}->{'heading'})));
   $self->{'Alat'}=$A;
   $self->{'Blat'}=$B;
   $self->{'Clat'}=$C;
@@ -93,10 +95,10 @@ sub initialize {
   ($A, $B, $C, $D)=$self->ABCD(
      $self->{'pt0'}->{'time'},
      $self->{'pt0'}->{'lon'} * EECMPD,
-     $self->{'pt0'}->{'speed'} * sin($self->{'pt0'}->{'heading'}/RAD),
+     $self->{'pt0'}->{'speed'} * sin(rad_deg($self->{'pt0'}->{'heading'})),
      $self->{'pt1'}->{'time'},
      $self->{'pt1'}->{'lon'} * EECMPD,
-     $self->{'pt1'}->{'speed'} * sin($self->{'pt1'}->{'heading'}/RAD));
+     $self->{'pt1'}->{'speed'} * sin(rad_deg($self->{'pt1'}->{'heading'})));
   $self->{'Alon'}=$A;
   $self->{'Blon'}=$B;
   $self->{'Clon'}=$C;
@@ -131,8 +133,8 @@ sub ABCD {
 
 Method returns a single point from a single time.
 
- my $point=$spline->point($t1);
- my %point=$spline->point($t1);
+  my $point=$spline->point($t1);
+  my %point=$spline->point($t1);
 
 =cut
 
@@ -147,9 +149,8 @@ sub point {
   my $vlat=$Blat + 2 * $Clat * $t + 3 * $Dlat * $t ** 2;
   my $vlon=$Blon + 2 * $Clon * $t + 3 * $Dlon * $t ** 2;
   my $speed=sqrt($vlat ** 2 + $vlon ** 2);
-  my $heading=PI/2 - atan2($vlat,$vlon);
-  $heading*=RAD;
-  $heading+=360 if ($heading < 0);
+  my $heading=&PI/2 - atan2($vlat,$vlon);
+  $heading=deg_rad($heading);
   $lat/=EPCMPD;
   $lon/=EECMPD;
   my %pt=(time=>$timereal,
@@ -164,8 +165,8 @@ sub point {
 
 Method returns a list of points from a list of times.
 
- my $list=$spline->pointlist($t1,$t2,$t3);
- my @list=$spline->pointlist($t1,$t2,$t3);
+  my $list=$spline->pointlist($t1,$t2,$t3);
+  my @list=$spline->pointlist($t1,$t2,$t3);
 
 =cut
 
@@ -184,8 +185,8 @@ sub pointlist {
 
 Method returns a list of times (n+1).  The default will return a list with an integer number of seconds between spline end points.
 
- my $list=$spline->timelist($samples); 
- my @list=$spline->timelist(); 
+  my $list=$spline->timelist($samples); 
+  my @list=$spline->timelist(); 
 
 =cut
 
@@ -201,10 +202,6 @@ sub timelist {
     push @list, $t;
   }
   return wantarray ? @list : \@list;
-}
-
-sub round {
-  return int(shift() + 0.5);
 }
 
 1;
@@ -227,10 +224,11 @@ Michael R. Davis qw/perl michaelrdavis com/
 
 =head1 LICENSE
 
+Copyright (c) 2006 Michael R. Davis (mrdvt92)
+
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-Net::GPSD
 Math::Spline
