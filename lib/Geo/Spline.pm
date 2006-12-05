@@ -47,12 +47,9 @@ use strict;
 use vars qw($VERSION);
 use Geo::Constants qw{PI};
 use Geo::Functions qw{deg_rad rad_deg round};
-use constant earth_polar_circumference_meters_per_degree => 6356752.314245 * &PI/180;
-use constant earth_equatorial_circumference_meters_per_degree => 6378137 * &PI/180;
-use constant EPCMPD => earth_polar_circumference_meters_per_degree;
-use constant EECMPD => earth_equatorial_circumference_meters_per_degree;
+use Geo::Ellipsoids;
 
-$VERSION = sprintf("%d.%02d", q{Revision: 0.09} =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q{Revision: 0.10} =~ /(\d+)\.(\d+)/);
 
 =head1 CONSTRUCTOR
 
@@ -79,14 +76,15 @@ sub initialize {
   my $self = shift();
   $self->{'pt0'}=shift();
   $self->{'pt1'}=shift();
+  $self->{'ellipsoid'}=Geo::Ellipsoids->new("WGS84");
   my $dt=$self->{'pt1'}->{'time'} - $self->{'pt0'}->{'time'};
   die ("Delta time must be greater than zero.") if ($dt<=0);
   my ($A, $B, $C, $D)=$self->ABCD(
      $self->{'pt0'}->{'time'},
-     $self->{'pt0'}->{'lat'} * EPCMPD,
+     $self->{'pt0'}->{'lat'} * $self->{'ellipsoid'}->polar_circumference / 360,
      $self->{'pt0'}->{'speed'} * cos(rad_deg($self->{'pt0'}->{'heading'})),
      $self->{'pt1'}->{'time'},
-     $self->{'pt1'}->{'lat'} * EPCMPD,
+     $self->{'pt1'}->{'lat'} * $self->{'ellipsoid'}->polar_circumference / 360,
      $self->{'pt1'}->{'speed'} * cos(rad_deg($self->{'pt1'}->{'heading'})));
   $self->{'Alat'}=$A;
   $self->{'Blat'}=$B;
@@ -94,10 +92,10 @@ sub initialize {
   $self->{'Dlat'}=$D;
   ($A, $B, $C, $D)=$self->ABCD(
      $self->{'pt0'}->{'time'},
-     $self->{'pt0'}->{'lon'} * EECMPD,
+     $self->{'pt0'}->{'lon'} * $self->{'ellipsoid'}->equatorial_circumference / 360,
      $self->{'pt0'}->{'speed'} * sin(rad_deg($self->{'pt0'}->{'heading'})),
      $self->{'pt1'}->{'time'},
-     $self->{'pt1'}->{'lon'} * EECMPD,
+     $self->{'pt1'}->{'lon'} * $self->{'ellipsoid'}->equatorial_circumference / 360,
      $self->{'pt1'}->{'speed'} * sin(rad_deg($self->{'pt1'}->{'heading'})));
   $self->{'Alon'}=$A;
   $self->{'Blon'}=$B;
@@ -149,10 +147,10 @@ sub point {
   my $vlat=$Blat + 2 * $Clat * $t + 3 * $Dlat * $t ** 2;
   my $vlon=$Blon + 2 * $Clon * $t + 3 * $Dlon * $t ** 2;
   my $speed=sqrt($vlat ** 2 + $vlon ** 2);
-  my $heading=&PI/2 - atan2($vlat,$vlon);
+  my $heading=PI()/2 - atan2($vlat,$vlon);
   $heading=deg_rad($heading);
-  $lat/=EPCMPD;
-  $lon/=EECMPD;
+  $lat/=$self->{'ellipsoid'}->polar_circumference / 360;
+  $lon/=$self->{'ellipsoid'}->equatorial_circumference / 360;
   my %pt=(time=>$timereal,
           lat=>$lat,
           lon=>$lon,
@@ -232,3 +230,4 @@ it under the same terms as Perl itself.
 =head1 SEE ALSO
 
 Math::Spline
+Geo::Ellipsoids
