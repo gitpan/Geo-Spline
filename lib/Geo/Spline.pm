@@ -49,7 +49,7 @@ use Geo::Constants qw{PI};
 use Geo::Functions qw{deg_rad rad_deg round};
 use Geo::Ellipsoids;
 
-$VERSION = sprintf("%d.%02d", q{Revision: 0.11} =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q{Revision: 0.12} =~ /(\d+)\.(\d+)/);
 
 =head1 CONSTRUCTOR
 
