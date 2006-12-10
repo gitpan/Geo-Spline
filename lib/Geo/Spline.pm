@@ -49,7 +49,7 @@ use Geo::Constants qw{PI};
 use Geo::Functions qw{deg_rad rad_deg round};
 use Geo::Ellipsoids;
 
-$VERSION = sprintf("%d.%02d", q{Revision: 0.12} =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q{Revision: 0.13} =~ /(\d+)\.(\d+)/);
 
 =head1 CONSTRUCTOR
 
@@ -76,15 +76,15 @@ sub initialize {
   my $self = shift();
   $self->{'pt0'}=shift();
   $self->{'pt1'}=shift();
-  $self->{'ellipsoid'}=Geo::Ellipsoids->new("WGS84");
+  my $ellipsoid=$self->ellipsoid("WGS84");
   my $dt=$self->{'pt1'}->{'time'} - $self->{'pt0'}->{'time'};
   die ("Delta time must be greater than zero.") if ($dt<=0);
   my ($A, $B, $C, $D)=$self->ABCD(
      $self->{'pt0'}->{'time'},
-     $self->{'pt0'}->{'lat'} * $self->{'ellipsoid'}->polar_circumference / 360,
+     $self->{'pt0'}->{'lat'} * $ellipsoid->polar_circumference / 360,
      $self->{'pt0'}->{'speed'} * cos(rad_deg($self->{'pt0'}->{'heading'})),
      $self->{'pt1'}->{'time'},
-     $self->{'pt1'}->{'lat'} * $self->{'ellipsoid'}->polar_circumference / 360,
+     $self->{'pt1'}->{'lat'} * $ellipsoid->polar_circumference / 360,
      $self->{'pt1'}->{'speed'} * cos(rad_deg($self->{'pt1'}->{'heading'})));
   $self->{'Alat'}=$A;
   $self->{'Blat'}=$B;
@@ -92,15 +92,37 @@ sub initialize {
   $self->{'Dlat'}=$D;
   ($A, $B, $C, $D)=$self->ABCD(
      $self->{'pt0'}->{'time'},
-     $self->{'pt0'}->{'lon'} * $self->{'ellipsoid'}->equatorial_circumference / 360,
+     $self->{'pt0'}->{'lon'} * $ellipsoid->equatorial_circumference / 360,
      $self->{'pt0'}->{'speed'} * sin(rad_deg($self->{'pt0'}->{'heading'})),
      $self->{'pt1'}->{'time'},
-     $self->{'pt1'}->{'lon'} * $self->{'ellipsoid'}->equatorial_circumference / 360,
+     $self->{'pt1'}->{'lon'} * $ellipsoid->equatorial_circumference / 360,
      $self->{'pt1'}->{'speed'} * sin(rad_deg($self->{'pt1'}->{'heading'})));
   $self->{'Alon'}=$A;
   $self->{'Blon'}=$B;
   $self->{'Clon'}=$C;
   $self->{'Dlon'}=$D;
+}
+
+=head2 ellipsoid
+
+Method to set or retrieve the current ellipsoid object.  The ellipsoid is a Geo::Ellipsoids object.
+
+  my $ellipsoid=$obj->ellipsoid;  #Default is WGS84
+
+  $obj->ellipsoid('Clarke 1866'); #Built in ellipsoids from Geo::Ellipsoids
+  $obj->ellipsoid({a=>1});        #Custom Sphere 1 unit radius
+
+=cut
+
+sub ellipsoid {
+  my $self = shift();
+  if (@_) {
+    my $param=shift();
+    use Geo::Ellipsoids;
+    my $obj=Geo::Ellipsoids->new($param);
+    $self->{'ellipsoid'}=$obj;
+  }
+  return $self->{'ellipsoid'};
 }
 
 sub ABCD {
@@ -139,6 +161,7 @@ Method returns a single point from a single time.
 sub point {
   my $self=shift();
   my $timereal=shift();
+  my $ellipsoid=$self->ellipsoid;
   my $t=$timereal-$self->{'pt0'}->{'time'};
   my ($Alat, $Blat, $Clat, $Dlat)=($self->{'Alat'}, $self->{'Blat'},$self->{'Clat'},$self->{'Dlat'});
   my ($Alon, $Blon, $Clon, $Dlon)=($self->{'Alon'}, $self->{'Blon'},$self->{'Clon'},$self->{'Dlon'});
@@ -149,8 +172,8 @@ sub point {
   my $speed=sqrt($vlat ** 2 + $vlon ** 2);
   my $heading=PI()/2 - atan2($vlat,$vlon);
   $heading=deg_rad($heading);
-  $lat/=$self->{'ellipsoid'}->polar_circumference / 360;
-  $lon/=$self->{'ellipsoid'}->equatorial_circumference / 360;
+  $lat/=$ellipsoid->polar_circumference / 360;
+  $lon/=$ellipsoid->equatorial_circumference / 360;
   my %pt=(time=>$timereal,
           lat=>$lat,
           lon=>$lon,
@@ -211,6 +234,8 @@ __END__
 Integrate a better lat,Lon to meter conversions.
 
 =head1 BUGS
+
+Please send to the geo-perl email list.
 
 =head1 LIMITS
 

@@ -8,7 +8,7 @@
 
 =head1 Test Examples
 
-base.t has good examples concerning how to use this module
+base.t - Good examples concerning how to use this module
 
 =cut
 
