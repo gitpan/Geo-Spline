@@ -7,10 +7,9 @@ example-point.pl
 =cut
 
 use strict;
-use lib qw{lib};
-use lib qw{../lib};
-
+use lib qw{./lib ../lib};
 use Geo::Spline;
+
 my $p0={time=>1160449100.67,
         lat=>39.197807,
         lon=>-77.263510,

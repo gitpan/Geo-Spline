@@ -7,9 +7,7 @@ example-track2spline.pl
 =cut
 
 use strict;
-use lib qw{lib};
-use lib qw{../lib};
-
+use lib qw{./lib ../lib};
 use Geo::Spline;
 
 my $p0=undef();

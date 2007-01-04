@@ -47,9 +47,8 @@ use strict;
 use vars qw($VERSION);
 use Geo::Constants qw{PI};
 use Geo::Functions qw{deg_rad rad_deg round};
-use Geo::Ellipsoids;
 
-$VERSION = sprintf("%d.%02d", q{Revision: 0.13} =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q{Revision: 0.14} =~ /(\d+)\.(\d+)/);
 
 =head1 CONSTRUCTOR
 
@@ -231,7 +230,7 @@ __END__
 
 =head1 TODO
 
-Integrate a better lat,Lon to meter conversions.
+Integrate a better Lat, Lon to meter conversions.
 
 =head1 BUGS
 
