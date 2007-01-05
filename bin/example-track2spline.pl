@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-example-track2spline.pl
+example-track2spline.pl - Geo::Spline example to insert spline points between a filtered GPS log
 
 =cut
 

@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-example-pointlist.pl
+example-pointlist.pl - Geo::Spline example to list a set of points between GPS fixes
 
 =cut
 

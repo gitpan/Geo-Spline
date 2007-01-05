@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-example-point.pl
+example-point.pl - Geo::Spline example to list a single point in time between GPS fixes
 
 =cut
 
