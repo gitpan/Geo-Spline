@@ -22,4 +22,20 @@ my $p1={time=>1160449225.66,
         heading=>150.5300};
 my $spline=Geo::Spline->new($p0, $p1);
 my $pt=$spline->point(1160449150);
-print "Lon:", $pt->{"lat"}, "  Lat:", $pt->{"lon"}, "\n";
+print "Time: ",    "\t", $pt->{"time"},    "\n",
+      "Lat: ",     "\t", $pt->{"lon"},     "\n",
+      "Lon: ",     "\t", $pt->{"lat"},     "\n",
+      "Speed: ",   "\t", $pt->{"speed"},   "\n",
+      "Heading: ", "\t", $pt->{"heading"}, "\n";
+
+__END__
+
+=head1 SAMPLE OUTPUT
+
+  Time:    1160449150
+  Lat:     -77.2548824212533
+  Lon:      39.1861322117117
+  Speed:    33.6486345148074
+  Heading: 142.982403679392
+
+=cut

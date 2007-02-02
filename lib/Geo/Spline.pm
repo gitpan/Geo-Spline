@@ -48,7 +48,7 @@ use vars qw($VERSION);
 use Geo::Constants qw{PI};
 use Geo::Functions qw{deg_rad rad_deg round};
 
-$VERSION = sprintf("%d.%02d", q{Revision: 0.15} =~ /(\d+)\.(\d+)/);
+$VERSION = sprintf("%d.%02d", q{Revision: 0.16} =~ /(\d+)\.(\d+)/);
 
 =head1 CONSTRUCTOR
 
@@ -253,5 +253,7 @@ it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
+http://search.cpan.org/src/MRDVT/Geo-Spline-0.16/doc/spline.xls
+http://search.cpan.org/src/MRDVT/Geo-Spline-0.16/doc/spline.png
 Math::Spline
 Geo::Ellipsoids
